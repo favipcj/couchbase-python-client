@@ -1101,20 +1101,32 @@ class QueryResult:
         """
         Metrics property to cover backwards compatibility with couchbase 2.5.12
         """
+        def snakecase_to_camelcase(value):
+            try:
+                temp = value.split('_')
+                res = temp[0] + ''.join(ele.title() for ele in temp[1:])
+            except Exception:
+                res = value
+            return res
+        try:
+            if self.__metrics:
+                return self.__metrics
+        except Exception:
+            pass
         try:
             self.__metrics = self.metadata().metrics()._raw
-            return self.__metrics
         except Exception:
             try:
                 result = self.execute()
-                metrics_raw = self.metadata().metrics()._raw
-                if metrics_raw and isinstance(metrics_raw, dict):
-                    metrics_raw["mutationCount"] = metrics_raw["mutation_count"]
-                    metrics_raw["executionTime"] = metrics_raw["execution_time"]
-                self.__metrics = metrics_raw
-                return self.__metrics
+                self.__metrics = self.metadata().metrics()._raw
             except Exception:
-                return self.__metrics
+                return {}
+        new_metrics_dict = dict()
+        if self.__metrics and isinstance(self.__metrics, dict):
+            for metric_key, metric_value in self.__metrics.items():
+                new_metrics_dict[snakecase_to_camelcase(metric_key)] = metric_value
+            self.__metrics = new_metrics_dict
+        return self.__metrics
 
     def __iter__(self):
         return self._request.__iter__()
