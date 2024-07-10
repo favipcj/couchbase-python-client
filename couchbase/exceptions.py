@@ -467,6 +467,9 @@ class TimeoutException(CouchbaseException):
         return self.__repr__()
 
 
+TimeoutError = TimeoutException
+
+
 class MissingConnectionException(CouchbaseException):
     def __init__(self, message=None, **kwargs):
         if message and isinstance(message, str) and 'message' not in kwargs:
@@ -493,7 +496,22 @@ class AmbiguousTimeoutException(CouchbaseException):
         return self.__repr__()
 
 
-class TemporaryFailException(CouchbaseException):
+class TemporaryFailError(CouchbaseException):
+    """For backwards compatibility reasons."""
+
+    def __init__(self, message=None, **kwargs):
+        if message and isinstance(message, str) and 'message' not in kwargs:
+            kwargs['message'] = message
+        super().__init__(**kwargs)
+
+    def __repr__(self):
+        return f"{type(self).__name__}({super().__repr__()})"
+
+    def __str__(self):
+        return self.__repr__()
+
+
+class TemporaryFailException(TemporaryFailError):
     def __init__(self, message=None, **kwargs):
         if message and isinstance(message, str) and 'message' not in kwargs:
             kwargs['message'] = message
@@ -623,6 +641,8 @@ class HTTPException(CouchbaseException):
         return self.__repr__()
 
 
+HTTPError = HTTPException
+
 class ServiceUnavailableException(CouchbaseException):
     """ Raised if tt can be determined from the config unambiguously that a
         given service is not available.
@@ -708,7 +728,7 @@ class DocumentExistsException(CouchbaseException):
         return self.__repr__()
 
 
-class DocumentLockedException(CouchbaseException):
+class DocumentLockedException(TemporaryFailError):
     """Indicates that the referenced document could not be used as it is currently locked,
     likely by another actor in the system."""
 
@@ -754,6 +774,8 @@ class DocumentNotFoundException(CouchbaseException):
     def __str__(self):
         return self.__repr__()
 
+
+NotFoundError = DocumentNotFoundException
 
 class DocumentNotJsonException(CouchbaseException):
     """Indicates a sub-document operation was attempted on a non-JSON document."""

@@ -28,6 +28,11 @@ from couchbase.logic.n1ql import QueryScanConsistency  # noqa: F401
 from couchbase.logic.n1ql import QueryStatus  # noqa: F401
 from couchbase.logic.n1ql import QueryWarning  # noqa: F401
 from couchbase.logic.n1ql import QueryRequestLogic
+from couchbase.exceptions import CouchbaseException
+
+
+# To cover backwards compatibility with couchbase 2.5.12
+N1QLError = CouchbaseException
 
 
 class N1QLRequest(QueryRequestLogic):

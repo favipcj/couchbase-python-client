@@ -796,6 +796,35 @@ class Collection(CollectionLogic):
 
         return self._get_and_lock_internal(key, **final_args)
 
+    def n1ql_query(self, query):
+        """
+        To cover backwards compatibility with couchbase 2.5.12
+        """
+        pass
+
+    def lock(
+        self,
+        key,  # type: str
+        ttl,  # type: timedelta
+        *opts,  # type: GetAndLockOptions
+        **kwargs,  # type: Dict[str, Any]
+    ) -> GetResult:
+        """
+        To cover backwards compatibility with couchbase 2.5.12
+        """
+        # add to kwargs for conversion to int
+        # convert int ttl value to timedelta to cover backwards compatibility with couchbase 2.5.12
+        from datetime import timedelta
+        ttl = timedelta(seconds=ttl)
+        kwargs["lock_time"] = ttl
+        final_args = forward_args(kwargs, *opts)
+        transcoder = final_args.get('transcoder', None)
+        if not transcoder:
+            transcoder = self.default_transcoder
+        final_args['transcoder'] = transcoder
+
+        return self._get_and_lock_internal(key, **final_args)
+
     @BlockingWrapper.block_and_decode(GetResult)
     def _get_and_lock_internal(self,
                                key,  # type: str

@@ -1096,6 +1096,26 @@ class QueryResult:
         """
         return self._request.metadata()
 
+    @property
+    def metrics(self):
+        """
+        Metrics property to cover backwards compatibility with couchbase 2.5.12
+        """
+        try:
+            self.__metrics = self.metadata().metrics()._raw
+            return self.__metrics
+        except Exception:
+            try:
+                result = self.execute()
+                metrics_raw = self.metadata().metrics()._raw
+                if metrics_raw and isinstance(metrics_raw, dict):
+                    metrics_raw["mutationCount"] = metrics_raw["mutation_count"]
+                    metrics_raw["executionTime"] = metrics_raw["execution_time"]
+                self.__metrics = metrics_raw
+                return self.__metrics
+            except Exception:
+                return self.__metrics
+
     def __iter__(self):
         return self._request.__iter__()
 
